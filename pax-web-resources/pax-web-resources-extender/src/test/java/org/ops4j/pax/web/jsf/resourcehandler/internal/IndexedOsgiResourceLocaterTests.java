@@ -52,7 +52,13 @@ public class IndexedOsgiResourceLocaterTests {
 		resourceBundleOne = new BundleBuilder().withBundleId(100).withSymbolicName("resourcebundle-one")
 				.buildWithResources("template.html", "base.css");
 		resourceBundleTwo = new BundleBuilder().withBundleId(100).withSymbolicName("resourcebundle-two")
-				.buildWithResources("footer.html", "js/some.js", "folder/subfolder/a.js", "folder/subfolder/b.js", "folder/bla/a.js");
+				.buildWithResources(
+						"footer.html",
+						"js/some.js",
+						"folder/subfolder/a.js",
+						"folder/subfolder/b.js",
+						"folder/bla/a.js",
+						"en/libraryname/test.css/2_4.css");
 
 		sut = new IndexedOsgiResourceLocator(context);
 		sut.register(resourceBundleOne);
@@ -80,6 +86,16 @@ public class IndexedOsgiResourceLocaterTests {
 		assertThat("Resource 'b.js' must be found under 'folder/subfolder'!",
 				result.stream().filter(r -> r.getUrl().toString().contains("folder/subfolder/b.js"))
 						.findFirst().get(), isBundleResource(resourceBundleTwo, "folder/subfolder/b.js"));
+	}
+
+	@Test
+	public void findResourcesWithNameAnywhere() throws Exception {
+
+		Collection<ResourceInfo> result = sut.findResourcesMatchingAnySegment("test.css");
+
+		assertThat("Only one resource should be found!", result.size(), equalTo(1));
+		assertThat("Resource 'test.css' must be found under 'en/libraryname/test.css/2_4.css'!",
+				result.stream().findFirst().get(), isBundleResource(resourceBundleTwo, "en/libraryname/test.css/2_4.css"));
 	}
 
 	@Test

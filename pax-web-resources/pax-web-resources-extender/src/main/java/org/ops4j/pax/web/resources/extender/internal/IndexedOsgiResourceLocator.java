@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.web.resources.api.OsgiResourceLocator;
@@ -134,7 +133,12 @@ public class IndexedOsgiResourceLocator implements OsgiResourceLocator {
 
 //	@Override
 	public Collection<ResourceInfo> findResourcesInPath(String path) {
-		return index.findResourcesInPath(RESOURCE_ROOT + cleanLeadingSlashFromPath(path));
+		return index.findResources(RESOURCE_ROOT + cleanLeadingSlashFromPath(path));
+	}
+
+//	@Override
+	public Collection<ResourceInfo> findResourcesMatchingAnySegment(String resourceName) {
+		return index.findResources(cleanLeadingSlashFromPath(resourceName));
 	}
 
 
@@ -179,10 +183,10 @@ public class IndexedOsgiResourceLocator implements OsgiResourceLocator {
 			return entry != null ? entry.getResourceInfo() : null;
 		}
 
-		private Collection<ResourceInfo> findResourcesInPath(String path){
+		private Collection<ResourceInfo> findResources(String path){
 			return indexMap.entrySet()
 					.stream()
-					.filter(entry -> entry.getKey().startsWith(path))
+					.filter(entry -> entry.getKey().contains(path))
 					.map(entry -> entry.getValue().getResourceInfo())
 					.collect(toList());
 		}

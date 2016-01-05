@@ -71,4 +71,12 @@ public interface OsgiResourceLocator {
 	 * @return all {@code ResourceInfo}s matching the given path
      */
 	Collection<ResourceInfo> findResourcesInPath(String path);
+
+	/**
+	 * Lookup all resources matching the given name at any location
+	 *
+	 * @param resourceName the name under which the resources should be found within any segment of the path
+	 * @return all {@code ResourceInfo}s matching the given resourceName anywhere in the path
+	 */
+	Collection<ResourceInfo> findResourcesMatchingAnySegment(String resourceName);
 }
