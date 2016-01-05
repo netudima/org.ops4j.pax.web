@@ -16,6 +16,7 @@
  */
 package org.ops4j.pax.web.resources.jsf;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -104,14 +105,24 @@ public class OsgiResourceHandler extends ResourceHandlerWrapper {
 
 	@Override
 	public Resource createResource(String resourceName, String libraryName, String contentType) {
+		Resource resource = super.createResource(resourceName, libraryName, contentType);
+		if(resource == null){
+			try(OsgiResourceLocatorClosableWrapper serviceWrapper = new OsgiResourceLocatorClosableWrapper()){
+				// lookup
+				Collection<ResourceInfo> matchingResources = serviceWrapper.findResourcesMatchingAnySegment(resourceName);
+			}
+		}
 
-		return getResource(
-				() -> super.createResource(resourceName, libraryName, contentType),
-				() -> {
-					ResourceInfo resourceInfo = getServiceAndExecute(x -> x.locateResource(createResourceIdentifier(resourceName, libraryName, contentType)));
-					return transformResourceInfo(resourceInfo, resourceName, libraryName);
-				}
-		);
+
+
+		return null;
+//		return getResource(
+//				() -> super.createResource(resourceName, libraryName, contentType),
+//				() -> {
+//					ResourceInfo resourceInfo = getServiceAndExecute(x -> x.locateResource(createResourceIdentifier(resourceName, libraryName, contentType)));
+//					return transformResourceInfo(resourceInfo, resourceName, libraryName);
+//				}
+//		);
 	}
 
 	private String createResourceIdentifier(String resourceName, String libraryName, String contentType) {
