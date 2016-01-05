@@ -279,5 +279,10 @@ public class WarJsfResourcehandlerIntegrationTest extends ITestBase {
         public Collection<ResourceInfo> findResourcesInPath(String path) {
             throw new UnsupportedOperationException("not yet interesting for test");
         }
+
+        @Override
+        public Collection<ResourceInfo> findResourcesMatchingAnySegment(String resourceName) {
+            throw new UnsupportedOperationException("not yet interesting for test");
+        }
     }
 }
