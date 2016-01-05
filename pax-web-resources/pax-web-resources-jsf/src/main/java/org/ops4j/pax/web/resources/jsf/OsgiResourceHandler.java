@@ -16,6 +16,7 @@
  */
 package org.ops4j.pax.web.resources.jsf;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -25,6 +26,7 @@ import javax.faces.application.ResourceHandlerWrapper;
 import javax.faces.application.ViewResource;
 import javax.faces.context.FacesContext;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.web.resources.api.OsgiResourceLocator;
 import org.ops4j.pax.web.resources.api.ResourceInfo;
 import org.ops4j.pax.web.resources.extender.internal.IndexedOsgiResourceLocator;
@@ -92,37 +94,46 @@ public class OsgiResourceHandler extends ResourceHandlerWrapper {
 
 	@Override
 	public Resource createResource(String resourceName) {
-		return getResource(
-                    () -> super.createResource(resourceName),
-                    () -> {
-                        ResourceInfo resourceInfo = getServiceAndExecute(x -> x.locateResource(resourceName));
-                        return transformResourceInfo(resourceInfo, resourceName, null);
-                    }
-                );
+		return createResource(resourceName, null);
 	}
 
 	@Override
 	public Resource createResource(String resourceName, String libraryName) {
-		// combine library with resource and remove duplicate '/'
-		final String lookupString = (libraryName + "/" + resourceName).replace("//", "/");
+		return createResource(resourceName, libraryName, null);
+	}
+
+	@Override
+	public Resource createResource(String resourceName, String libraryName, String contentType) {
 
 		return getResource(
-                    () -> super.createResource(resourceName, libraryName),
-                    () -> {
-                        ResourceInfo resourceInfo = getServiceAndExecute(x -> x.locateResource(lookupString));
-                        return transformResourceInfo(resourceInfo, resourceName, libraryName);
-                    }
-                );
+				() -> super.createResource(resourceName, libraryName, contentType),
+				() -> {
+					ResourceInfo resourceInfo = getServiceAndExecute(x -> x.locateResource(createResourceIdentifier(resourceName, libraryName, contentType)));
+					return transformResourceInfo(resourceInfo, resourceName, libraryName);
+				}
+		);
 	}
 
-	private Resource transformResourceInfo(ResourceInfo resourceInfo, String resourceName, String libraryName) {
-		if(resourceInfo == null){
-			return null;
+	private String createResourceIdentifier(String resourceName, String libraryName, String contentType) {
+		final String resourceIdentifier;
+
+		if (StringUtils.isNotBlank(libraryName)) {
+			resourceIdentifier = (libraryName + "/" + resourceName).replace("//", "/");
+		}else{
+			resourceIdentifier = resourceName;
 		}
-		return new OsgiResource(resourceInfo.getUrl(), resourceName, libraryName, resourceInfo.getLastModified());
+
+		return resourceIdentifier;
 	}
 
-	/**
+  	private Resource transformResourceInfo(ResourceInfo resourceInfo, String resourceName, String libraryName) {
+	 if(resourceInfo == null){
+	 return null;
+	 }
+	 return new OsgiResource(resourceInfo.getUrl(), resourceName, libraryName, resourceInfo.getLastModified());
+	 }
+
+	 /**
 	 * Will first attempt to retrieve a resource via the first given function.
 	 * If that failed, the second function will be used.
 	 * 
