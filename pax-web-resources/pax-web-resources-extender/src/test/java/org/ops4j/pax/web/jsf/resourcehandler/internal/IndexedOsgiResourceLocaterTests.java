@@ -17,6 +17,8 @@
 package org.ops4j.pax.web.jsf.resourcehandler.internal;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.mockito.Matchers.isNotNull;
 import static org.ops4j.pax.web.jsf.resourcehandler.internal.OsgiResourceMatcher.isBundleResource;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,9 +30,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.ops4j.pax.web.resources.api.ResourceInfo;
 import org.ops4j.pax.web.resources.extender.internal.IndexedOsgiResourceLocator;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -48,7 +52,7 @@ public class IndexedOsgiResourceLocaterTests {
 		resourceBundleOne = new BundleBuilder().withBundleId(100).withSymbolicName("resourcebundle-one")
 				.buildWithResources("template.html", "base.css");
 		resourceBundleTwo = new BundleBuilder().withBundleId(100).withSymbolicName("resourcebundle-two")
-				.buildWithResources("footer.html", "js/some.js");
+				.buildWithResources("footer.html", "js/some.js", "folder/subfolder/a.js", "folder/subfolder/b.js", "folder/bla/a.js");
 
 		sut = new IndexedOsgiResourceLocator(context);
 		sut.register(resourceBundleOne);
@@ -62,6 +66,20 @@ public class IndexedOsgiResourceLocaterTests {
 		assertThat("Resource doesnt match!", sut.locateResource("base.css"), isBundleResource(resourceBundleOne, "base.css"));
 		assertThat("Resource doesnt match!", sut.locateResource("footer.html"), isBundleResource(resourceBundleTwo, "footer.html"));
 		assertThat("Resource doesnt match!", sut.locateResource("js/some.js"), isBundleResource(resourceBundleTwo, "js/some.js"));
+	}
+
+	@Test
+	public void findResources() throws Exception {
+
+		Collection<ResourceInfo> result = sut.findResourcesInPath("/folder/subfolder");
+
+		assertThat("Only two resources should be found!", result.size(), equalTo(2));
+		assertThat("Resource 'a.js' must be found under 'folder/subfolder'!",
+				result.stream().filter(r -> r.getUrl().toString().contains("folder/subfolder/a.js"))
+						.findFirst().get(), isBundleResource(resourceBundleTwo, "folder/subfolder/a.js"));
+		assertThat("Resource 'b.js' must be found under 'folder/subfolder'!",
+				result.stream().filter(r -> r.getUrl().toString().contains("folder/subfolder/b.js"))
+						.findFirst().get(), isBundleResource(resourceBundleTwo, "folder/subfolder/b.js"));
 	}
 
 	@Test

@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.web.resources.api.OsgiResourceLocator;
@@ -37,6 +38,8 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * <p>
@@ -129,6 +132,11 @@ public class IndexedOsgiResourceLocator implements OsgiResourceLocator {
 		}
 	}
 
+//	@Override
+	public Collection<ResourceInfo> findResourcesInPath(String path) {
+		return index.findResourcesInPath(RESOURCE_ROOT + cleanLeadingSlashFromPath(path));
+	}
+
 
 	/**
 	 * Removes the leading '/' because it does not have any meaning
@@ -169,6 +177,14 @@ public class IndexedOsgiResourceLocator implements OsgiResourceLocator {
 		private ResourceInfo getResourceInfo(String lookupPath) {
 			ResourceBundleIndexEntry entry = indexMap.get(lookupPath);
 			return entry != null ? entry.getResourceInfo() : null;
+		}
+
+		private Collection<ResourceInfo> findResourcesInPath(String path){
+			return indexMap.entrySet()
+					.stream()
+					.filter(entry -> entry.getKey().startsWith(path))
+					.map(entry -> entry.getValue().getResourceInfo())
+					.collect(toList());
 		}
 
 		private void cleanBundleFromIndex(final Bundle bundle) {

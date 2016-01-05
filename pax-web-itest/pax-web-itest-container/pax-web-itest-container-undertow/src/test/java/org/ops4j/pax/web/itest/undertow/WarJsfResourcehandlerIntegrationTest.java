@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 
 import javax.faces.context.FacesContext;
 
@@ -258,5 +259,10 @@ public class WarJsfResourcehandlerIntegrationTest extends ITestBase {
 		public ResourceInfo locateResource(String resourceName) {
 			return resource;
 		}
+
+        @Override
+        public Collection<ResourceInfo> findResourcesInPath(String path) {
+            throw new UnsupportedOperationException("not yet interesting for test");
+        }
     }
 }
