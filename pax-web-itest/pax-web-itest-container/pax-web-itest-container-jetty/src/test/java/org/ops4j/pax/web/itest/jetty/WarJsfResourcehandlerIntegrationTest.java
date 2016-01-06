@@ -8,6 +8,8 @@ package org.ops4j.pax.web.itest.jetty;
 import static org.junit.Assert.fail;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.ops4j.pax.exam.CoreOptions.options;
+import static org.ops4j.pax.exam.CoreOptions.frameworkProperty;
+import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 import static org.ops4j.pax.exam.OptionUtils.combine;
 import static org.ops4j.pax.web.itest.base.assertion.Assert.assertThat;
 
@@ -37,10 +39,10 @@ import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.web.itest.base.assertion.BundleMatchers;
-import org.ops4j.pax.web.resources.jsf.OsgiResource;
 import org.ops4j.pax.web.resources.api.OsgiResourceLocator;
 import org.ops4j.pax.web.resources.api.ResourceInfo;
 import org.ops4j.pax.web.resources.extender.internal.IndexedOsgiResourceLocator;
+import org.ops4j.pax.web.resources.jsf.OsgiResource;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.FrameworkUtil;
@@ -158,7 +160,7 @@ public class WarJsfResourcehandlerIntegrationTest extends ITestBase {
         
         // start testing
         final String pageUrl = "http://127.0.0.1:8181/osgi-resourcehandler-myfaces/index.xhtml";
-        final String imageUrl = "http://127.0.0.1:8181/osgi-resourcehandler-myfaces/javax.faces.resource/iceland.jpg.xhtml?ln=images";
+        final String imageUrl = "http://127.0.0.1:8181/osgi-resourcehandler-myfaces/javax.faces.resource/images/iceland.jpg.xhtml?ln=default&amp;v=1_0";
         BundleMatchers.isBundleActive("org.ops4j.pax.web.pax-web-resources-extender", bundleContext);
         BundleMatchers.isBundleActive("org.ops4j.pax.web.pax-web-resources-jsf", bundleContext);
         BundleMatchers.isBundleActive("jsf-resourcehandler-myfaces", bundleContext);
@@ -178,7 +180,7 @@ public class WarJsfResourcehandlerIntegrationTest extends ITestBase {
                 resp -> StringUtils.contains(resp, "Customized Footer"));
         assertThat("Image-URL must be created from OsgiResource", 
         		response, 
-        		resp -> StringUtils.contains(resp, "/osgi-resourcehandler-myfaces/javax.faces.resource/iceland.jpg.xhtml?ln=images"));
+        		resp -> StringUtils.contains(resp, "/osgi-resourcehandler-myfaces/javax.faces.resource/images/iceland.jpg.xhtml?ln=default&amp;v=1_0"));
         // test resource serving for image
         testClient.testWebPath(imageUrl, HttpStatus.SC_OK);
         // Install override bundle
@@ -218,11 +220,11 @@ public class WarJsfResourcehandlerIntegrationTest extends ITestBase {
         
         // Test second faces-mapping which uses a prefix (faces/*)
         final String pageUrlWithPrefixMapping = "http://127.0.0.1:8181/osgi-resourcehandler-myfaces/faces/index.xhtml";
-        final String imageUrlWithPrefixMapping = "http://127.0.0.1:8181/osgi-resourcehandler-myfaces/faces/javax.faces.resource/iceland.jpg?ln=images";
+        final String imageUrlWithPrefixMapping = "http://127.0.0.1:8181/osgi-resourcehandler-myfaces/faces/javax.faces.resource/images/iceland.jpg?ln=default";
         response = testClient.testWebPath(pageUrlWithPrefixMapping, HttpStatus.SC_OK);
         assertThat("Image-URL must be created from OsgiResource. This time the second servlet-mapping (faces/*) must be used.", 
         		response, 
-        		resp -> StringUtils.contains(resp, "/osgi-resourcehandler-myfaces/faces/javax.faces.resource/iceland.jpg?ln=images"));
+        		resp -> StringUtils.contains(resp, "/osgi-resourcehandler-myfaces/faces/javax.faces.resource/images/iceland.jpg?ln=default&amp;v=1_0"));
         testClient.testWebPath(imageUrlWithPrefixMapping, HttpStatus.SC_OK);
     }
     

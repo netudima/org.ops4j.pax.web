@@ -721,7 +721,7 @@
 				<version>2.12</version>
 				<configuration>
 					<includes>
-						<include>**/*IntegrationTest.java</include>
+						<include>**/WarJsfResourcehandlerIntegrationTest.java</include>
 					</includes>
 					<!-- This test will work if PAXWEB-154 and PAXWEB-123 are fixed -->
 					<excludes>
