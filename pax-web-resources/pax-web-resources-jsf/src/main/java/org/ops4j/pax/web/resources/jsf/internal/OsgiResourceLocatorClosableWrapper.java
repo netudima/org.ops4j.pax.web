@@ -1,4 +1,4 @@
-package org.ops4j.pax.web.resources.jsf;
+package org.ops4j.pax.web.resources.jsf.internal;
 
 import org.ops4j.pax.web.resources.api.OsgiResourceLocator;
 import org.ops4j.pax.web.resources.api.ResourceInfo;
@@ -25,7 +25,7 @@ public class OsgiResourceLocatorClosableWrapper implements AutoCloseable {
     private final ServiceReference<OsgiResourceLocator> serviceRef;
     private volatile OsgiResourceLocator resourceLocatorService;
 
-    OsgiResourceLocatorClosableWrapper(){
+    public OsgiResourceLocatorClosableWrapper(){
         // hook into OSGi-Framework
         this.context = FrameworkUtil.getBundle(this.getClass()).getBundleContext();
         // get-service, execute function, and unget-service
@@ -49,7 +49,7 @@ public class OsgiResourceLocatorClosableWrapper implements AutoCloseable {
     /**
      * @see OsgiResourceLocator#locateResource(String)
      */
-    ResourceInfo locateResource(final String resourceName){
+    public ResourceInfo locateResource(final String resourceName){
         return resourceLocatorService.locateResource(resourceName);
     }
 
@@ -57,14 +57,14 @@ public class OsgiResourceLocatorClosableWrapper implements AutoCloseable {
     /**
      * @see OsgiResourceLocator#findResourcesInPath(String)
      */
-    Collection<ResourceInfo> findResourcesInPath(final String path){
+    public Collection<ResourceInfo> findResourcesInPath(final String path){
         return resourceLocatorService.findResourcesInPath(path);
     }
 
     /**
      * @see OsgiResourceLocator#findResourcesMatchingAnySegment(String)
      */
-    Collection<ResourceInfo> findResourcesMatchingAnySegment(final String resourceName){
+    public Collection<ResourceInfo> findResourcesMatchingAnySegment(final String resourceName){
         return resourceLocatorService.findResourcesMatchingAnySegment(resourceName);
     }
 }

@@ -17,7 +17,7 @@
 package org.ops4j.pax.web.resources.jsf;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -31,9 +31,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.web.resources.api.OsgiResourceLocator;
 import org.ops4j.pax.web.resources.api.ResourceInfo;
 import org.ops4j.pax.web.resources.extender.internal.IndexedOsgiResourceLocator;
+import org.ops4j.pax.web.resources.jsf.internal.OsgiResourceLocatorClosableWrapper;
+import org.ops4j.pax.web.resources.jsf.internal.ResourceHandlerUtils;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This ResourceHandler can be used in OSGi-enabled JSF applications to access
@@ -72,6 +76,7 @@ import org.osgi.framework.ServiceReference;
 public class OsgiResourceHandler extends ResourceHandlerWrapper {
 
 	private final ResourceHandler wrapped;
+	private transient Logger logger = LoggerFactory.getLogger(getClass());
 
 	public OsgiResourceHandler(ResourceHandler wrapped) {
 		this.wrapped = wrapped;
@@ -105,11 +110,28 @@ public class OsgiResourceHandler extends ResourceHandlerWrapper {
 
 	@Override
 	public Resource createResource(String resourceName, String libraryName, String contentType) {
+		
+		logger.warn("================== libraryName='" + libraryName + "' resourceName='" +resourceName +"'" );
+		
 		Resource resource = super.createResource(resourceName, libraryName, contentType);
 		if(resource == null){
+			final FacesContext facesContext = FacesContext.getCurrentInstance();
+			final Optional<String> localePrefix = ResourceHandlerUtils.getLocalePrefixForLocateResource(facesContext);
+			
+			String lookup = null;
+			if(libraryName != null){
+				lookup = libraryName + '/' + resourceName;
+			}
+			
+			if(localePrefix.isPresent()){
+				lookup = localePrefix.get() + '/' + lookup;
+			}
+			
 			try(OsgiResourceLocatorClosableWrapper serviceWrapper = new OsgiResourceLocatorClosableWrapper()){
+				ResourceInfo res = serviceWrapper.locateResource(lookup);
+				return transformResourceInfo(res, resourceName, libraryName);
 				// lookup
-				Collection<ResourceInfo> matchingResources = serviceWrapper.findResourcesMatchingAnySegment(resourceName);
+//				Collection<ResourceInfo> matchingResources = serviceWrapper.findResourcesMatchingAnySegment(resourceName);
 			}
 		}
 

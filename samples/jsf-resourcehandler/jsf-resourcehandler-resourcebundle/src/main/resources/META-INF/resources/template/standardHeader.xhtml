@@ -24,6 +24,12 @@
 
     <ui:composition>
 		<h3>Standard Header</h3>
+		<!-- default locale (is) should display icelandic-flag first -->
+		<h:graphicImage library="layout" name="flag.png"/>
+		<!-- lookup german-flag -->
+		<f:view locale="de">
+			<h:graphicImage library="layout" name="flag.png"/>
+		</f:view>
 	</ui:composition>
 
 </h:body>
