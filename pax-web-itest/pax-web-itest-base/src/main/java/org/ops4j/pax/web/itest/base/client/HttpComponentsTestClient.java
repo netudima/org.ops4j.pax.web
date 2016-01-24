@@ -107,7 +107,7 @@ public class HttpComponentsTestClient implements HttpTestClient {
 
 		if (returnCode != null) {
 			final boolean assertionResult = assertTrue(httpResponse.getStatusLine().getStatusCode(),
-					status -> status == returnCode);
+					status -> returnCode.equals(status));
 			if (!assertionResult) {
 				assertionErrors.add(
 						String.format(
