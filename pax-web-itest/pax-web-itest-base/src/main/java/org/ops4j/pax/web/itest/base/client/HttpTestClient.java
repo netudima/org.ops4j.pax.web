@@ -30,8 +30,9 @@ public interface HttpTestClient {
 	public HttpTestClient withReturnCode(int returnCode);
 	
 	/**
-	 * 
-	 * @param message description what the response should contain
+	 * The given predicate is applied against the returned response-body (String) when {@link #executeTest(String)}
+	 * is called. Multiple assertions can be prepared and are combined in one assertion.
+	 * @param message Assertion message in case the predicate fails
 	 * @param assertion the assertion-predicate gets the response-body as parameter
 	 * @return the HttpTestClient-instance
 	 */
