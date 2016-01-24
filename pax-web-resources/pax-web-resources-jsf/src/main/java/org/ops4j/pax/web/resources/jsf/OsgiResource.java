@@ -49,7 +49,11 @@ public class OsgiResource extends Resource {
      * Identifies the FacesServlet mapping in the current request map.
      */
     private static final String CACHED_SERVLET_MAPPING = OsgiResource.class.getName() + ".CACHED_SERVLET_MAPPING";
-	
+    
+    static final String REQUEST_PARAM_TYPE = "type";
+    static final String REQUEST_PARAM_LIBRARY = "ln";
+	static final Object REQUEST_PARAM_LOCALE = "loc";
+    
 	private transient Logger logger;
 	private final URL bundleResourceUrl;
 	private final LocalDateTime lastModified;
@@ -91,18 +95,21 @@ public class OsgiResource extends Resource {
         }
 		
         
-        List<String> optionalParameters = new ArrayList<>(5);
+        List<String> parameters = new ArrayList<>(5);
+        // mark OsgiResources with request-parameter
+        parameters.add(REQUEST_PARAM_TYPE + "=osgi");
+        // used library-name
 		if (getLibraryName() != null) {
-			optionalParameters.add("ln=" + getLibraryName());
+			parameters.add(REQUEST_PARAM_LIBRARY + "=" + getLibraryName());
 		}
 		if (!facesContext.isProjectStage(ProjectStage.Production))
         {
             // append stage for all ProjectStages except Production
-			optionalParameters.add("stage=" + facesContext.getApplication().getProjectStage().toString());
+			parameters.add("stage=" + facesContext.getApplication().getProjectStage().toString());
         }
 		
 		// concat optional parameter with & and add as request-parameters
-		String parameterString = optionalParameters.stream().collect(Collectors.joining("&"));
+		String parameterString = parameters.stream().collect(Collectors.joining("&"));
 		if(StringUtils.isNotBlank(parameterString)){
 			pathBuilder.append("?").append(parameterString);
 		}

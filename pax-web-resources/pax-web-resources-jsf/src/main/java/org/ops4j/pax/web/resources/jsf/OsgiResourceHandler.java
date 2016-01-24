@@ -16,7 +16,9 @@
  */
 package org.ops4j.pax.web.resources.jsf;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -145,6 +147,19 @@ public class OsgiResourceHandler extends ResourceHandlerWrapper {
 //					return transformResourceInfo(resourceInfo, resourceName, libraryName);
 //				}
 //		);
+	}
+	
+	@Override
+	public void handleResourceRequest(FacesContext facesContext) throws IOException {
+		Map<String, String> requestParameterMap = facesContext.getExternalContext().getRequestParameterMap();
+		if(!"osgi".equals(requestParameterMap.get(OsgiResource.REQUEST_PARAM_TYPE))){
+			// no OsgiResource...proceed with default ResourceHandler
+			super.handleResourceRequest(facesContext);
+		}
+		String localePrefix = requestParameterMap.get(OsgiResource.REQUEST_PARAM_LOCALE);
+		String libraryName = requestParameterMap.get(OsgiResource.REQUEST_PARAM_LIBRARY);
+		
+		
 	}
 
 	private String createResourceIdentifier(String resourceName, String libraryName, String contentType) {

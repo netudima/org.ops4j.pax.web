@@ -22,7 +22,9 @@
 		<resource-handler>org.ops4j.pax.web.resources.jsf.OsgiResourceHandler</resource-handler>
 		<locale-config>
 			<default-locale>is</default-locale>
+			<supported-locale>is</supported-locale>
 			<supported-locale>de</supported-locale>
 		</locale-config>
+		<message-bundle>org.ops4j.pax.web.jsf.resourcehandler.standard</message-bundle>
 	</application>
 </faces-config>
