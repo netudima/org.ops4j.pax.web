@@ -10,6 +10,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -52,13 +54,20 @@ final class HttpComponentsWrapper {
 
 	private HttpClientContext context = HttpClientContext.create();
 
+	private final Map<String, String> httpHeaders;
+
 	private String user;
 
 	private String password;
 
 	private String keyStore;
 
-	HttpComponentsWrapper(String user, String password, String keyStore) throws Exception {
+	HttpComponentsWrapper(Map<String, String> httpHeaders, String user, String password, String keyStore) throws Exception {
+		if(httpHeaders != null){
+			this.httpHeaders = Collections.unmodifiableMap(httpHeaders);
+		}else{
+			this.httpHeaders = Collections.unmodifiableMap(Collections.emptyMap());
+		}
 		this.user = user;
 		this.password = password;
 
@@ -135,14 +144,17 @@ final class HttpComponentsWrapper {
 			boolean async) throws IOException, KeyManagementException, UnrecoverableKeyException,
 					NoSuchAlgorithmException, KeyStoreException, CertificateException, AuthenticationException,
 					InterruptedException, ExecutionException {
-		HttpGet httpget = null;
 
 		HttpHost targetHost = getHttpHost(path);
 
 		BasicHttpContext localcontext = basicHttpContext == null ? new BasicHttpContext() : basicHttpContext;
 
-		httpget = new HttpGet(path);
-		httpget.addHeader("Accept-Language", "en");
+		HttpGet httpget = new HttpGet(path);
+		for(Map.Entry<String, String> entry : httpHeaders.entrySet()){
+			LOG.info("adding request-header: {}={}", entry.getKey(), entry.getValue());
+			httpget.addHeader(entry.getKey(), entry.getValue());
+		}
+
 		LOG.info("calling remote {} ...", path);
 		HttpResponse response = null;
 		if (!authenticate && basicHttpContext == null) {
@@ -167,7 +179,6 @@ final class HttpComponentsWrapper {
 
 			localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
 			httpget.addHeader(basicAuth.authenticate(creds, httpget, localcontext));
-			httpget.addHeader("Accept-Language", "en-us;q=0.8,en;q=0.5");
 			if (!async) {
 				response = httpclient.execute(targetHost, httpget, localcontext);
 			} else {

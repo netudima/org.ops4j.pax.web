@@ -91,6 +91,7 @@ public class HttpComponentsTestClient implements HttpTestClient {
 	public void executeTest(String path) throws Exception {
 
 		HttpComponentsWrapper wrapper = new HttpComponentsWrapper(
+				httpHeaders,
 				keystoreConfig.getUsername(), 
 				keystoreConfig.getPassword(), 
 				keystoreConfig.getKeystoreLocation());
