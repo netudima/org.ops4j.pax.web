@@ -242,18 +242,16 @@ public class WarJsfResourcehandlerIntegrationTest extends ITestBase {
         
 
         // Test If-Modified-Since
-        HttpGet request = new HttpGet(imageUrl);
-        HttpClient client = HttpClients.createDefault();
+        ZonedDateTime now = ZonedDateTime.of(
+                LocalDateTime.now(),
+                ZoneId.of(ZoneId.SHORT_IDS.get("ECT")));
+        // "Modified-Since should mark response with 304"
+        HttpTestClientFactory.createHttpComponentsTestClient()
+                .withReturnCode(HttpStatus.SC_NOT_MODIFIED)
+                .addRequestHeader(HttpHeaders.IF_MODIFIED_SINCE, now.format(DateTimeFormatter.RFC_1123_DATE_TIME))
+                .executeTest(imageUrl);
 
-        ZoneId zone = ZoneId.of(ZoneId.SHORT_IDS.get("ECT"));
-        ZonedDateTime now = ZonedDateTime.of(LocalDateTime.now(), zone);
-        request.setHeader(HttpHeaders.IF_MODIFIED_SINCE, now.format(DateTimeFormatter.RFC_1123_DATE_TIME));
 
-        HttpResponse httpResponse = client.execute(request);
-        assertThat("Modified-Since should mark response with 304",
-                httpResponse.getStatusLine().getStatusCode(),
-                statusCode -> statusCode == HttpStatus.SC_NOT_MODIFIED);
-        
         // Test second faces-mapping which uses a prefix (faces/*)
         final String pageUrlWithPrefixMapping = "http://127.0.0.1:8181/osgi-resourcehandler-myfaces/faces/index.xhtml";
         final String imageUrlWithPrefixMapping = "http://127.0.0.1:8181/osgi-resourcehandler-myfaces/faces/javax.faces.resource/images/iceland.jpg?ln=default";
@@ -266,75 +264,6 @@ public class WarJsfResourcehandlerIntegrationTest extends ITestBase {
 				"Image-URL must be created from OsgiResource. This time the second servlet-mapping (faces/*) must be used.", 
 				resp -> StringUtils.contains(resp, "/osgi-resourcehandler-myfaces/faces/javax.faces.resource/images/iceland.jpg?ln=default&amp;v=1_0"))
 			.executeTest(imageUrlWithPrefixMapping);
-
-//        OLD
-//        // call url and check
-//        String response = testClient.testWebPath(pageUrl, HttpStatus.SC_OK);
-//        assertThat("Some Content shall be included from the jsf-application-bundle to test internal view-resources",
-//                response,
-//                resp -> StringUtils.contains(resp, "Hello Included Content"));
-//        assertThat("Standard header shall be loaded from resourcebundle to test external view-resources",
-//                response,
-//                resp -> StringUtils.contains(resp, "Standard Header"));
-//        assertThat("Images shall be loaded from resourcebundle to test external resources",
-//                response,
-//                resp -> StringUtils.contains(resp, "iceland.jpg"));
-//        assertThat("Customized footer shall be loaded from resourcebundle to test external view-resources",
-//                response,
-//                resp -> StringUtils.contains(resp, "Customized Footer"));
-//        assertThat("Image-URL must be created from OsgiResource", 
-//        		response, 
-//        		resp -> StringUtils.contains(resp, "/osgi-resourcehandler-myfaces/javax.faces.resource/images/iceland.jpg.xhtml?ln=default&amp;v=1_0"));
-//        
-//        
-//        // test resource serving for image
-//        testClient.testWebPath(imageUrl, HttpStatus.SC_OK);
-//        // Install override bundle
-//        String bundlePath = mavenBundle()
-//                .groupId("org.ops4j.pax.web.samples")
-//                .artifactId("jsf-resourcehandler-resourcebundle-override").versionAsInProject().getURL();
-//        Bundle installedResourceBundle = installAndStartBundle(bundlePath);
-//        BundleMatchers.isBundleActive(installedResourceBundle.getSymbolicName(), bundleContext);
-//        // call url
-//        response = testClient.testWebPath(pageUrl, HttpStatus.SC_OK);
-//        assertThat("Overriden footer shall be loaded from resourcebundle-override  to test external view-resources which are overriden",
-//                response,
-//                resp -> StringUtils.contains(resp, "Overriden Footer"));
-//        assertThat("Iceland-Picture shall be found in version 3.0 from resourcebunde-override", 
-//        		response,
-//        		resp -> StringUtils.contains(resp, "javax.faces.resource/images/iceland.jpg.xhtml?ln=default&amp;v=3_0"));
-//        // uninstall overriding bundle
-//        installedResourceBundle.stop();
-//        
-//        Thread.sleep(1000); //to fast for tests, resource isn't fully gone yet 
-//        
-//        // call url and test that previously shadowed resource (footer) is served again
-//        response = testClient.testWebPath(pageUrl, HttpStatus.SC_OK);
-//        assertThat("Customized footer shall be loaded from resourcebundle",
-//                response,
-//                resp -> StringUtils.contains(resp, "Customized Footer"));
-//
-//        // Test If-Modified-Since
-//        HttpGet request = new HttpGet(imageUrl);
-//        HttpClient client = HttpClients.createDefault();
-//
-//        ZoneId zone = ZoneId.of(ZoneId.SHORT_IDS.get("ECT"));
-//        ZonedDateTime now = ZonedDateTime.of(LocalDateTime.now(), zone);
-//        request.setHeader(HttpHeaders.IF_MODIFIED_SINCE, now.format(DateTimeFormatter.RFC_1123_DATE_TIME));
-//
-//        HttpResponse httpResponse = client.execute(request);
-//        assertThat("Modified-Since should mark response with 304",
-//                httpResponse.getStatusLine().getStatusCode(),
-//                statusCode -> statusCode == HttpStatus.SC_NOT_MODIFIED);
-//        
-//        // Test second faces-mapping which uses a prefix (faces/*)
-//        final String pageUrlWithPrefixMapping = "http://127.0.0.1:8181/osgi-resourcehandler-myfaces/faces/index.xhtml";
-//        final String imageUrlWithPrefixMapping = "http://127.0.0.1:8181/osgi-resourcehandler-myfaces/faces/javax.faces.resource/images/iceland.jpg?ln=default";
-//        response = testClient.testWebPath(pageUrlWithPrefixMapping, HttpStatus.SC_OK);
-//        assertThat("Image-URL must be created from OsgiResource. This time the second servlet-mapping (faces/*) must be used.", 
-//        		response, 
-//        		resp -> StringUtils.contains(resp, "/osgi-resourcehandler-myfaces/faces/javax.faces.resource/images/iceland.jpg?ln=default&amp;v=1_0"));
-//        testClient.testWebPath(imageUrlWithPrefixMapping, HttpStatus.SC_OK);
     }
     
     /**
