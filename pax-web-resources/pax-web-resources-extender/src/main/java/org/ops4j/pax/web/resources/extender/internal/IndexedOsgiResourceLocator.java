@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.ops4j.pax.web.resources.api.OsgiResourceLocator;
 import org.ops4j.pax.web.resources.api.ResourceInfo;
+import org.ops4j.pax.web.resources.api.ResourceQuery;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -141,6 +142,14 @@ public class IndexedOsgiResourceLocator implements OsgiResourceLocator {
 		return index.findResources(cleanLeadingSlashFromPath(resourceName));
 	}
 
+	@Override
+	public Collection<ResourceInfo> findResources(ResourceQuery query) {
+		if(query == null){
+			throw new IllegalArgumentException("ResourceQuery must be set!");
+		}
+		return index.findResources(query);
+	}
+
 
 	/**
 	 * Removes the leading '/' because it does not have any meaning
@@ -215,6 +224,16 @@ public class IndexedOsgiResourceLocator implements OsgiResourceLocator {
 				shadowedMap.remove(entry);
 			});
 		}
+
+		public Collection<ResourceInfo> findResources(ResourceQuery query) {
+			return indexMap.entrySet()
+					.stream()
+					.filter(entry -> query.matches(entry.getKey()))
+					.map(entry -> entry.getValue().getResourceInfo())
+					.collect(toList());
+		}
+
+
 	}
 
 	private class ResourceBundleIndexEntry {

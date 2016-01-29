@@ -79,4 +79,7 @@ public interface OsgiResourceLocator {
 	 * @return all {@code ResourceInfo}s matching the given resourceName anywhere in the path
 	 */
 	Collection<ResourceInfo> findResourcesMatchingAnySegment(String resourceName);
+
+
+	Collection<ResourceInfo> findResources(ResourceQuery query);
 }
